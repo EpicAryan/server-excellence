@@ -1,12 +1,25 @@
-import express, { Application, Request, Response } from 'express';
+import dotenv from 'dotenv';
+dotenv.config();
+import db from "./config/db_connect";
+import { Request, Response } from 'express';
+import app from "./app";
 
-const app: Application = express();
-const port: number = 3000;
 
-app.get('/', (req: Request, res: Response) => {
-  res.send('Hello, World!');
-});
+const port = process.env.PORT || 4000;
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+db.$client.connect()
+  .then(client => {
+    console.log('Database connection successful');
+    client.release(); 
+
+    app.listen(port, () => {
+      console.log(`Example app listening on port ${port}`)
+    });
+  })
+  .catch(error => {
+    console.error('Database connection error:', error);
+  });
+
+  app.get("/",(req: Request,res: Response)=>{
+    res.json("Welcome to the API");
+  });
