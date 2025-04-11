@@ -36,4 +36,4 @@ export type Board = z.infer<typeof boardSchema>;
 export type Class = z.infer<typeof classSchema>;
 export type Subject = z.infer<typeof subjectSchema>;
 export type Chapter = z.infer<typeof chapterSchema>;
-export type Topic = z.infer<typeof topicSchema>;
+export type TopicInput = z.infer<typeof topicSchema>;

@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 
 const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
 
+
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
   if (!token) {
@@ -30,4 +31,12 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     res.status(403).json({ message: "Invalid token" });
     return;
   }
+};
+
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user?.role !== 'admin') {
+    res.status(403).json({ message: 'Admin privileges required' });
+    return;
+  }
+  next();
 };

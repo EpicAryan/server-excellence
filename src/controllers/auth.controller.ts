@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser, logoutUser } from "../services";
+import { registerUser, loginUser, logoutUser, refreshUserTokenBySessionId } from "../services";
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -29,7 +29,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const result = await loginUser(email, password);
     if (result.success) {
-      res.cookie("refreshToken", result.refreshToken, {
+      res.cookie("refreshToken", result.sessionId, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
@@ -43,10 +43,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       });
     }
 
-    res.status(result.success ? 200 : 400).json({
+    res.status(result.success ? 200 : 401).json({
       accessToken: result.accessToken,
       user: result.userWithoutPassword,
-      refreshToken: result.refreshToken,
+      sessionId: result.sessionId,
+      message: result.message,
     });
     return;
   } catch (error) {
@@ -56,17 +57,59 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-// export const refreshToken = async (req: Request, res: Response): Promise<void> => {
-//   const token = req.cookies.refreshToken;
-//   if (!token) {
-//     res.status(401).json({ message: "Unauthorized" });
-//     return;
-//   }
+export const refreshToken = async (req: Request, res: Response): Promise<void> => {
+  try {
+      const sessionId = req.cookies.sessionId;
+      
+      if (!sessionId) {
+        res.status(401).json({ message: "Unauthorized - No session identifier" });
+        return;
+      }
 
-//   const result = await refreshUserToken(token);
-//   res.status(result.success ? 200 : 401).json(result);
-//   return;
-// };
+      const result = await refreshUserTokenBySessionId(sessionId);
+      
+      if (result.success) {
+          // Set only the access token in cookies, NOT the refresh token
+          res.cookie("accessToken", result.accessToken, {
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+              sameSite: "strict",
+              maxAge: 24 * 60 * 60 * 1000, // 1 day
+          });
+          
+          res.cookie("sessionId", result.sessionId, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          });
+          // Return success with tokens and user data
+          res.status(200).json({
+              success: true,
+              accessToken: result.accessToken,
+              refreshToken: result.sessionId, // Send refresh token in response body
+              user: result.user
+          });
+      } else {
+          // Clear cookies if refresh failed
+          res.clearCookie("accessToken");
+          res.clearCookie("sessionId");
+
+          res.status(401).json({ 
+              success: false, 
+              message: result.message || "Token refresh failed" 
+          });
+      }
+  } catch (error) {
+      console.error("Refresh token endpoint error:", error);
+      res.clearCookie("accessToken");
+      res.clearCookie("sessionId");
+      res.status(500).json({ 
+          success: false, 
+          message: "Internal server error" 
+      });
+  }
+};
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
