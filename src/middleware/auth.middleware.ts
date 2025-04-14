@@ -16,6 +16,10 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
   try {
     const decoded = jwt.verify(token, ACCESS_SECRET) as JwtPayload;
+    if (!decoded) {
+      res.status(401).json({ message: "Invalid Access Token" });
+      return;
+    }
     const user = await db
       .select()
       .from(users)

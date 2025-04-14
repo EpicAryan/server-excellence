@@ -1,7 +1,7 @@
 // controllers/chapter.controller.ts
 import { Request, Response } from 'express';
 import { chapterSchema } from '../schemas/course.schema';
-import { createChapter, findSubjectById, getChaptersBySubject } from '../services';
+import { createChapter, deleteChapter, findSubjectById, getChaptersBySubject, updateChapterInDB } from '../services';
 
 
 export const addChapter = async (req: Request, res: Response): Promise<void> => {
@@ -54,5 +54,50 @@ export const getChapters = async (req: Request, res: Response): Promise<void> =>
   } catch (error) {
     console.error('Error fetching chapters:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+export const removeChapter = async (req: Request, res: Response) => {
+  try {
+    const chapterId = parseInt(req.params.id);
+    if (isNaN(chapterId)) {
+      res.status(400).json({ message: "Invalid chapter ID" });
+      return;
+    }
+
+    await deleteChapter(chapterId);
+    res.status(200).json({ message: "chapter and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting chapter:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateChapter = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const chapterId = parseInt(req.params.id);
+
+    if (isNaN(chapterId)) {
+      res.status(400).json({ message: "Invalid chapter ID" });
+      return;
+    }
+
+    const { chapterName } = req.body;
+
+    const updated = await updateChapterInDB(chapterId, chapterName);
+
+    if (!updated || updated.length === 0) {
+      res.status(404).json({ message: "Chapter not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Chapter updated successfully",
+      data: updated[0]
+    });
+  } catch (error) {
+    console.error("Error updating chapter:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

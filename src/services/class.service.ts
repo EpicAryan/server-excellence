@@ -17,3 +17,16 @@ export const getClassesByBoard = async (boardId: number) => {
       eq(classes.boardId, boardId),
     )
 }
+
+export const deleteClass = async (classId: number) => {
+  return db.delete(classes).where(eq(classes.classId, classId));
+};
+
+
+export const updateClassInDB = async (classId: number, className: string) => {
+  return db
+    .update(classes)
+    .set({ className })
+    .where(eq(classes.classId, classId))
+    .returning();
+};

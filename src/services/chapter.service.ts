@@ -17,3 +17,14 @@ export const getChaptersBySubject = async (subjectId: number) => {
       eq(chapter.subjectId, subjectId),
     )
 }
+
+export const deleteChapter = async (chapterId: number) => {
+  return db.delete(chapter).where(eq(chapter.chapterId, chapterId));
+};
+
+export const updateChapterInDB = async (id: number, chapterName: string) => {
+  return db.update(chapter)
+    .set({ chapterName })
+    .where(eq(chapter.chapterId, id))
+    .returning();
+};

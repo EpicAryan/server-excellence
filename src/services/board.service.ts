@@ -9,3 +9,15 @@ export const createBoard = async (boardName: string) => {
 export const getAllBoards = async () => {
   return db.select().from(board);
 }
+
+export const deleteBoard = async (boardId: number) => {
+  return db.delete(board).where(eq(board.boardId, boardId));
+};
+
+export const updateBoardInDB  = async (boardId: number, boardName: string) => {
+  return db
+    .update(board)
+    .set({ boardName })
+    .where(eq(board.boardId, boardId))
+    .returning();
+};

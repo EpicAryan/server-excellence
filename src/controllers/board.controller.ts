@@ -1,7 +1,7 @@
 // controllers/board.controller.ts
 import {Request, Response } from 'express';
 import { boardSchema } from '../schemas/course.schema';
-import { createBoard, getAllBoards } from '../services';
+import { createBoard, getAllBoards, deleteBoard, updateBoardInDB  } from '../services';
 
 export const addBoard = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -14,7 +14,6 @@ export const addBoard = async (req: Request, res: Response): Promise<void> => {
     }
     
     const { boardName } = req.body ;
-    
     // Insert board
     const newBoard = await createBoard(boardName);
     
@@ -36,5 +35,53 @@ export const getBoards = async (_req: Request, res: Response): Promise<void> => 
   } catch (error) {
     console.error('Error fetching boards:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const removeBoard = async (req: Request, res: Response) => {
+  try {
+    const boardId = parseInt(req.params.id);
+    if (isNaN(boardId)) {
+      res.status(400).json({ message: "Invalid board ID" });
+      return;
+    }
+
+    await deleteBoard(boardId);
+    res.status(200).json({ message: "Board and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting board:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateBoard = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const boardId = parseInt(req.params.id);
+    if (isNaN(boardId)) {
+      res.status(400).json({ message: "Invalid board ID" });
+      return;
+    }
+
+    const { boardName } = req.body;
+
+    if (!boardName || typeof boardName !== 'string') {
+      res.status(400).json({ message: "Invalid board name" });
+      return;
+    }
+
+    const updated = await updateBoardInDB(boardId, boardName);
+
+    if (!updated || updated.length === 0) {
+      res.status(404).json({ message: "Board not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Board updated successfully",
+      data: updated[0]
+    });
+  } catch (error) {
+    console.error("Error updating board:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

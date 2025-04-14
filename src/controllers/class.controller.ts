@@ -1,7 +1,7 @@
 // controllers/class.controller.ts
 import {Request, Response } from 'express';
 import { classSchema } from '../schemas/course.schema';
-import { findBoardById, createClass, getClassesByBoard } from '../services';
+import { findBoardById, createClass, getClassesByBoard,deleteClass, updateClassInDB } from '../services';
 
 export const addClass = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -58,5 +58,54 @@ export const getClasses = async (req: Request, res: Response): Promise<void> => 
   } catch (error) {
     console.error('Error fetching classes:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const removeClass = async (req: Request, res: Response) => {
+  try {
+    const classId = parseInt(req.params.id);
+    if (isNaN(classId)) {
+      res.status(400).json({ message: "Invalid class ID" });
+      return;
+    }
+
+    await deleteClass(classId);
+    res.status(200).json({ message: "Class and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting class:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+export const updateClass = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const classId = parseInt(req.params.id);
+    if (isNaN(classId)) {
+      res.status(400).json({ message: "Invalid class ID" });
+      return;
+    }
+
+    const { className } = req.body;
+
+    if (!className || typeof className !== 'string') {
+      res.status(400).json({ message: "Invalid class name" });
+      return;
+    }
+
+    const updated = await updateClassInDB(classId, className);
+
+    if (!updated || updated.length === 0) {
+      res.status(404).json({ message: "Class not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Class updated successfully",
+      data: updated[0]
+    });
+  } catch (error) {
+    console.error("Error updating class:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -1,7 +1,7 @@
 // controllers/subject.controller.ts
 import {Request, Response } from 'express';
 import { subjectSchema } from '../schemas/course.schema';
-import { createSubject, findClassById, getSubjectsByClass } from '../services';
+import { createSubject, findClassById, getSubjectsByClass, deleteSubject, updateSubjectInDB } from '../services';
 
 export const addSubject = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -54,5 +54,53 @@ export const getSubjects = async (req: Request, res: Response): Promise<void> =>
   } catch (error) {
     console.error('Error fetching subjects:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const removeSubject = async (req: Request, res: Response) => {
+  try {
+    const subjectId = parseInt(req.params.id);
+    if (isNaN(subjectId)) {
+      res.status(400).json({ message: "Invalid subject ID" });
+      return;
+    }
+
+    await deleteSubject(subjectId);
+    res.status(200).json({ message: "Subject and related data deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting subject:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateSubject = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const subjectId = parseInt(req.params.id);
+    if (isNaN(subjectId)) {
+      res.status(400).json({ message: "Invalid subject ID" });
+      return;
+    }
+
+    const { subjectName } = req.body;
+
+    if (!subjectName || typeof subjectName !== 'string') {
+      res.status(400).json({ message: "Invalid subject name" });
+      return;
+    }
+
+    const updated = await updateSubjectInDB(subjectId, subjectName);
+
+    if (!updated || updated.length === 0) {
+      res.status(404).json({ message: "Subject not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "Subject updated successfully",
+      data: updated[0]
+    });
+  } catch (error) {
+    console.error("Error updating subject:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };

@@ -21,3 +21,15 @@ export const getSubjectsByClass = async (classId: number) => {
       eq(subject.classId, classId)
     )
 }
+
+export const deleteSubject = async (subjectId: number) => {
+  return db.delete(subject).where(eq(subject.subjectId, subjectId)).returning();
+};
+
+export const updateSubjectInDB = async (subjectId: number, subjectName: string) => {
+  return db
+    .update(subject)
+    .set({ subjectName })
+    .where(eq(subject.subjectId, subjectId))
+    .returning();
+};
