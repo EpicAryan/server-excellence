@@ -4,4 +4,4 @@ export * from './class.controller'
 export * from './subject.controller'
 export * from './chapter.controller'
 export * from './topic.controller'
-
+export * from './assignClass.controller'

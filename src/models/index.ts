@@ -8,5 +8,6 @@ export * from './class.model';
 export * from './subject.model';
 export * from './chapter.model';
 export * from './topic.model';
+export * from './userClasses.model'
 
 export { users, access, accessRelations, notes, notesRelations, uploads, uploadsRelations, refreshTokens };

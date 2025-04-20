@@ -40,7 +40,7 @@ export const getTopicsFiltered = async (options: {
   page?: number;
   limit?: number;
 }) => {
-  const { search, chapterId, boardId, classId, subjectId, page = 1, limit = 10 } = options;
+  const { search, chapterId, boardId, classId, subjectId, page = 1, limit = 3 } = options;
 
   // Start with a base condition that's always true
   const baseCondition = sql`1 = 1`;

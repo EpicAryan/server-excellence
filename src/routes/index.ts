@@ -5,6 +5,7 @@ import classRoutes from './class.routes';
 import subjectRoutes from './subject.routes';
 import chapterRoutes from './chapter.routes';
 import topicRoutes from './topic.routes';
+import assignClassRoutes from './assignClass.routes'
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.use('/classes', classRoutes);
 router.use('/subjects', subjectRoutes);
 router.use('/chapters', chapterRoutes);
 router.use('/topics', topicRoutes);
+router.use('/users', assignClassRoutes);
 
 
 export default router;
