@@ -1,5 +1,5 @@
 // topic.model.ts
-import { pgTable, serial, varchar, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, integer, boolean,timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { chapter } from "./chapter.model";
 
@@ -9,6 +9,8 @@ export const topic = pgTable("topic", {
   pdfUrl: varchar("pdf_url", { length: 500 }),
   isActive: boolean("is_active").default(true),
   chapterId: integer("chapter_id").notNull().references(() => chapter.chapterId, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
 });
 
 // Topic Relations

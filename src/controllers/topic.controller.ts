@@ -9,7 +9,9 @@ import {
     deleteTopic,
     uploadPdfToCloudinary,
     deleteFileFromCloudinary,
-    getTopicById
+    getTopicById,
+    getTopicsFiltered,
+    updateTopicStatusById
 } from "../services";
 
 export const addTopic = async (req: Request, res: Response): Promise<void> => {
@@ -100,28 +102,105 @@ export const addTopic = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+// export const getTopics = async (req: Request, res: Response): Promise<void> => {
+//     try {
+//         const chapterId = parseInt(req.query.chapterId as string, 10);
+
+//         if (isNaN(chapterId)) {
+//             res.status(400).json({ message: "Invalid chapter ID" });
+//             return;
+//         }
+
+//         const topics = await getTopicsByChapterId(chapterId);
+//         res.status(200).json(topics);
+//     } catch (error) {
+//         console.error("Error fetching topics:", error);
+//         res.status(500).json({ message: "Server error" });
+//     }
+// };
+
+
 export const getTopics = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const chapterId = parseInt(req.query.chapterId as string, 10);
-
-        if (isNaN(chapterId)) {
-            res.status(400).json({ message: "Invalid chapter ID" });
-            return;
-        }
-
-        const topics = await getTopicsByChapterId(chapterId);
-        res.status(200).json(topics);
-    } catch (error) {
-        console.error("Error fetching topics:", error);
-        res.status(500).json({ message: "Server error" });
+  try {
+    const {
+      search,
+      chapterId,
+      boardId,
+      classId,
+      subjectId,
+      page,
+      limit
+    } = req.query;
+    
+    // Convert params to appropriate types
+    const params: any = {};
+    
+    if (chapterId) {
+      const numericChapterId = parseInt(chapterId as string, 10);
+      if (!isNaN(numericChapterId)) {
+        params.chapterId = numericChapterId;
+      }
     }
+    
+    if (boardId) {
+      const numericBoardId = parseInt(boardId as string, 10);
+      if (!isNaN(numericBoardId)) {
+        params.boardId = numericBoardId;
+      }
+    }
+    
+    if (classId) {
+      const numericClassId = parseInt(classId as string, 10);
+      if (!isNaN(numericClassId)) {
+        params.classId = numericClassId;
+      }
+    }
+    
+    if (subjectId) {
+      const numericSubjectId = parseInt(subjectId as string, 10);
+      if (!isNaN(numericSubjectId)) {
+        params.subjectId = numericSubjectId;
+      }
+    }
+    
+    if (search) {
+      params.search = search as string;
+    }
+    
+    if (page) {
+      const numericPage = parseInt(page as string, 10);
+      if (!isNaN(numericPage) && numericPage > 0) {
+        params.page = numericPage;
+      }
+    }
+    
+    if (limit) {
+      const numericLimit = parseInt(limit as string, 10);
+      if (!isNaN(numericLimit) && numericLimit > 0) {
+        params.limit = numericLimit;
+      }
+    }
+    
+    // If it's a legacy call looking for topics by chapterId only, use the original function
+    if (Object.keys(params).length === 1 && params.chapterId) {
+      const topics = await getTopicsByChapterId(params.chapterId);
+      res.status(200).json(topics);
+      return;
+    }
+    
+    // Otherwise use the new filtered function
+    const result = await getTopicsFiltered(params);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error fetching topics:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 export const updateTopicById = async (
     req: Request,
     res: Response
 ): Promise<void> => {
-    let newPdfUrl: string | undefined = undefined;
     try {
         const topicId = parseInt(req.params.id, 10);
         const numericTopicId = Number(topicId)
@@ -136,46 +215,10 @@ export const updateTopicById = async (
           res.status(404).json({ message: 'Topic not found' });
           return;
         }
-        const existingTopic = existingTopics[0];
-        let chapterId = existingTopic.chapterId;
-        let chapterName = ''; 
-        // if (req.file) {
-        //   newPdfUrl = await uploadPdfToCloudinary(req.file.buffer, req.file.originalname);
-        // }
-        
-        // let chapterId = undefined;
-        if (req.body.chapterId) {
-          chapterId = parseInt(req.body.chapterId, 10);
-          if (isNaN(chapterId)) {
-            res.status(400).json({ message: 'Invalid chapter ID' });
-            return;
-          }
-        }
-
-        const chapterData = await findChapterById(chapterId);
-        if (!chapterData) {
-            res.status(404).json({ message: "Chapter not found" });
-            return;
-        }
-        chapterName = chapterData[0].chapterName;
-        
-        if (req.file) {
-          newPdfUrl = await uploadPdfToCloudinary(
-            req.file.buffer,
-            req.file.originalname,
-            chapterId,
-            chapterName
-          );
-        }
+       
 
         const topicData: Partial<typeof topicSchema._type> = {
             ...(req.body.topicName && { topicName: req.body.topicName }),
-            ...(chapterId  !== undefined && { chapterId  }),
-            ...(newPdfUrl  !== undefined && { pdfUrl: newPdfUrl }),
-            ...(req.body.isActive !== undefined && {
-                isActive:
-                    req.body.isActive === "true" || req.body.isActive === true,
-            }),
         };
         
 
@@ -183,19 +226,8 @@ export const updateTopicById = async (
         const updatedTopic = await updateTopic(topicId, topicData);
 
         if (updatedTopic.length === 0) {
-          if (newPdfUrl) {
-            await deleteFileFromCloudinary(newPdfUrl);
-          }
             res.status(404).json({ message: "Topic not found" });
             return;
-        }
-        
-        if (newPdfUrl && existingTopic.pdfUrl && existingTopic.pdfUrl !== newPdfUrl) {
-          try {
-            await deleteFileFromCloudinary(existingTopic.pdfUrl);
-          } catch (cloudinaryError) {
-            console.error('Error deleting old file from Cloudinary:', cloudinaryError);
-          }
         }
 
         res.status(200).json({
@@ -203,13 +235,6 @@ export const updateTopicById = async (
             data: updatedTopic[0],
         });
     } catch (error) {
-      if (newPdfUrl) {
-        try {
-          await deleteFileFromCloudinary(newPdfUrl);
-        } catch (cloudinaryError) {
-          console.error('Error deleting file from Cloudinary:', cloudinaryError);
-        }
-      }
         console.error("Error updating topic:", error);
         res.status(500).json({ message: "Server error" });
     }
@@ -257,4 +282,27 @@ export const deleteTopicById = async (
         console.error("Error deleting topic:", error);
         res.status(500).json({ message: "Server error" });
     }
+};
+
+export const toggleTopicStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { topicId } = req.params;
+    const { isActive } = req.body;
+
+    if (!topicId || isNaN(Number(topicId))) {
+      res.status(400).json({ message: 'Invalid topicId' });
+      return;
+    }
+
+    if (typeof isActive !== 'boolean') {
+      res.status(400).json({ message: 'Invalid isActive value' });
+      return;
+    }
+
+    const updated = await updateTopicStatusById(Number(topicId), isActive);
+    res.status(200).json(updated[0]);
+  } catch (error) {
+    console.error('Error toggling topic status:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
 };
