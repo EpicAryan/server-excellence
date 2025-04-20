@@ -265,7 +265,6 @@ export const deleteTopicById = async (
             res.status(404).json({ message: "Topic not found" });
             return;
         }
-
         if (existingTopic.pdfUrl) {
           try {
             await deleteFileFromCloudinary(existingTopic.pdfUrl);

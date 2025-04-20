@@ -39,13 +39,16 @@ export const uploadPdfToCloudinary = (buffer: Buffer, filename: string,  chapter
 
 export const deleteFileFromCloudinary = async (fileUrl: string): Promise<void> => {
     try {
-        const urlParts = fileUrl.split('/');
-        const filenameWithExtension = urlParts[urlParts.length - 1];
-        const filename = filenameWithExtension.split('.')[0];
-        const folderPath = urlParts[urlParts.length - 2];
-        const publicId = `${folderPath}/${filename}`;
+        console.log("Deleting Cloudinary file:", fileUrl);
 
-        await cloudinary.uploader.destroy(publicId, {resource_type: 'raw'});
+        const urlParts = fileUrl.split('/');
+        const filenameWithExtension = decodeURIComponent(urlParts[urlParts.length - 1]);
+        const folderPath = decodeURIComponent(urlParts[urlParts.length - 2]);
+        const publicId = `${folderPath}/${filenameWithExtension}`;
+
+        await cloudinary.uploader.destroy(publicId, {
+            resource_type: 'raw'
+        });
     } catch (error){
         console.error('Error deleting file from Cloudinary:', error);
         throw error;
