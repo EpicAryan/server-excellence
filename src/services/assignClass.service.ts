@@ -23,22 +23,32 @@ export const searchUsersByEmail = async (email: string) => {
     return results[0] || null;
   }
   
-// User-Class services
+
 export const assignClassesToUser = async (userId: number, classIds: number[]) => {
-  // First, remove existing classes for this user (optional, depends on requirements)
-  await db.delete(userClasses)
+  // Get existing class IDs for this user
+  const existingClasses = await db.select({ classId: userClasses.classId })
+    .from(userClasses)
     .where(eq(userClasses.userId, userId));
   
-  // Insert new class assignments
-  const values = classIds.map(classId => ({
-    userId,
-    classId,
-    assignedAt: new Date(),
-  }));
+  const existingClassIds = existingClasses.map(c => c.classId);
   
-  return db.insert(userClasses)
-    .values(values)
-    .returning();
+  // Filter out classes that are already assigned to avoid duplicates
+  const newClassIds = classIds.filter(id => !existingClassIds.includes(id));
+  
+  // If there are new classes to assign
+  if (newClassIds.length > 0) {
+    const values = newClassIds.map(classId => ({
+      userId,
+      classId,
+      assignedAt: new Date(),
+    }));
+    
+    return db.insert(userClasses)
+      .values(values)
+      .returning();
+  }
+  
+  return [];
 }
 
 export const getUserClasses = async (userId: number) => {
