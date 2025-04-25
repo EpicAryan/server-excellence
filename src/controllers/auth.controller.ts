@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { registerUser, loginUser, logoutUser, refreshUserTokenBySessionId } from "../services";
+import { registerUser, loginUser, logoutUser, refreshUserTokenBySessionId, getUserById, getUserByIdMe } from "../services";
+import  jwt  from "jsonwebtoken";
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -29,16 +30,18 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const result = await loginUser(email, password);
     if (result.success) {
-      res.cookie("refreshToken", result.sessionId, {
+      res.cookie("sessionId", result.sessionId, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
+        path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res.cookie("accessToken", result.accessToken, { // Corrected: Use accessToken here
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
+        path: "/",
         maxAge: 24 * 60 * 60 * 1000,
       });
     }
@@ -113,21 +116,56 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
   try {
-    const token = req.cookies?.refreshToken;
-    if (!token) {
+    const sessionId = req.cookies?.sessionId || req.body?.sessionId;
+    if (!sessionId ) {
       res.status(400).json({ message: "No token provided" });
       return; 
     }
 
-    await logoutUser(token);
-    res.clearCookie("refreshToken");
-    res.clearCookie("accessToken");
+    await logoutUser(sessionId );
+    res.clearCookie("sessionId", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/", 
+    });
+    
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/", 
+    });
+    
 
-    res.json({ message: "Logged out successfully" });
+    res.status(200).json({ message: "Logged out successfully" });
     return;
   } catch (error) {
     console.error("Logout error:", error);
     res.status(500).json({ message: "Internal server error" });
     return;
+  }
+};
+
+export const getMe = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const accessToken = req.cookies?.accessToken;
+    if (!accessToken) {
+      res.status(401).json({ message: 'No token provided' });
+      return;
+    }
+
+    const decoded = jwt.verify(accessToken, process.env.JWT_ACCESS_SECRET!) as {user: { id: number }};
+    const user = await getUserByIdMe(decoded.user.id);
+
+    if (!user) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    res.json({ user });
+  } catch (error) {
+    console.error('Error in getMe:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

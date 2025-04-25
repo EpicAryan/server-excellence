@@ -1,4 +1,4 @@
-export { signup, login, logout  } from './auth.controller';
+export * from './auth.controller';
 export * from './board.controller'
 export * from './class.controller'
 export * from './subject.controller'

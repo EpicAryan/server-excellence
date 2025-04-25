@@ -163,12 +163,35 @@ export const refreshUserTokenBySessionId = async (sessionId: string) => {
     }
 };
 
-export const logoutUser = async (token: string) => {
+export const logoutUser = async (sessionId: string) => {
     try {
-        await db.delete(refreshTokens).where(eq(refreshTokens.token, token));
+        await db.delete(refreshTokens).where(eq(refreshTokens.sessionId, sessionId));
         return { success: true, message: "Logged out successfully" };
     } catch (error) {
         console.error("Logout error:", error);
         return { success: false, message: "Logout failed" };
     }
 };
+
+
+export const getUserByIdMe = async (userId: Number) => {
+    try {
+        const numericUserId = Number(userId);
+        if (isNaN(numericUserId)) {
+            console.error('Invalid userId: not a number');
+            null;
+        }
+      const result = await db.select().from(users).where(eq(users.id, numericUserId)).limit(1);
+  
+      if (result.length === 0) {
+        return null;
+      }
+  
+      const { password, ...safeUser } = result[0];
+      return safeUser 
+    } catch (error) {
+      console.error('Error in getUserById:', error);
+      return null;
+    }
+  };
+  
