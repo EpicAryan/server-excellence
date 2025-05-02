@@ -5,7 +5,8 @@ import {
   updateStudentPermission, 
   removeStudentBatch,
   deleteStudent,
-  getUserClasses
+  getUserClasses,
+  checkStudentPermission
 } from '../services';
 
 export const getAllStudents = async (req: Request, res: Response): Promise<void> => {
@@ -85,6 +86,19 @@ export const getStudentClasses = async (req: Request, res: Response): Promise<vo
       res.status(400).json({ message: 'Invalid user ID' });
       return;
     }
+
+    const { found, hasPermission } = await checkStudentPermission(userId);
+
+    if (!found) {
+      res.status(404).json({ message: 'User not found' });
+      return;
+    }
+
+    if (!hasPermission) {
+      res.status(403).json({ message: 'Permission denied' });
+      return;
+    }
+    
     const userClassesData = await getUserClasses(userId);
    
     res.status(200).json(userClassesData);

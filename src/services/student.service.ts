@@ -159,3 +159,15 @@ export const getUserClasses = async (userId: number) => {
   
   return result;
 };
+
+
+
+export const checkStudentPermission = async (userId: number) => {
+  const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+  if (user.length === 0) {
+    return { found: false, hasPermission: false }; 
+  }
+
+  return { found: true, hasPermission: user[0].hasPermission }; 
+};
