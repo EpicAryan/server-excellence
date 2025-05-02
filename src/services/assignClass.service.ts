@@ -51,11 +51,11 @@ export const assignClassesToUser = async (userId: number, classIds: number[]) =>
   return [];
 }
 
-export const getUserClasses = async (userId: number) => {
-  return db.select({
-    class: classes,
-  })
-    .from(userClasses)
-    .innerJoin(classes, eq(userClasses.classId, classes.classId))
-    .where(eq(userClasses.userId, userId));
-}
+// export const getUserClasses = async (userId: number) => {
+//   return db.select({
+//     class: classes,
+//   })
+//     .from(userClasses)
+//     .innerJoin(classes, eq(userClasses.classId, classes.classId))
+//     .where(eq(userClasses.userId, userId));
+// }

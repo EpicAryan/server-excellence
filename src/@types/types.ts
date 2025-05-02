@@ -23,4 +23,36 @@ interface TopicInput {
     offset?: number;
   }
 
-export { UserWithoutPassword, TopicInput , FilterOptions};
+  interface Topic {
+    topicId: number;
+    topicName: string;
+    pdfUrl: string | null;
+    isActive: boolean | null;
+  };
+  
+  interface Chapter {
+    chapterId: number;
+    chapterName: string;
+    topics: Topic[];
+  };
+  
+  interface Subject  {
+    subjectId: number;
+    subjectName: string;
+    chapters: Chapter[];
+  };
+  
+  interface Board  {
+    boardId: number;
+    boardName: string;
+  };
+  
+  interface ClassObj  {
+    classId: number;
+    className: string;
+    board: Board;
+    subjects: Subject[];
+  };
+
+
+export { UserWithoutPassword, TopicInput , FilterOptions , Topic, Chapter, Subject, Board, ClassObj};

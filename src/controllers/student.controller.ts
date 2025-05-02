@@ -4,7 +4,8 @@ import {
   getStudentsWithClasses, 
   updateStudentPermission, 
   removeStudentBatch,
-  deleteStudent
+  deleteStudent,
+  getUserClasses
 } from '../services';
 
 export const getAllStudents = async (req: Request, res: Response): Promise<void> => {
@@ -71,6 +72,24 @@ export const removeStudent = async (req: Request, res: Response): Promise<void> 
     res.status(200).json({ message: 'Student removed successfully' });
   } catch (error) {
     console.error('Error removing student:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+export const getStudentClasses = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = parseInt(req.params.studentId, 10);
+    
+    if (isNaN(userId)) {
+      res.status(400).json({ message: 'Invalid user ID' });
+      return;
+    }
+    const userClassesData = await getUserClasses(userId);
+   
+    res.status(200).json(userClassesData);
+  } catch (error) {
+    console.error('Error fetching student classes:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

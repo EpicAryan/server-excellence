@@ -17,20 +17,10 @@ import {
 export const addTopic = async (req: Request, res: Response): Promise<void> => {
     let pdfUrl: string | null = null;
     try {
-        // if (req.file) {
-        //     pdfUrl = await uploadPdfToCloudinary(
-        //         req.file.buffer,
-        //         req.file.originalname
-        //     );
-        // }
-
         const { chapterId, topicName, isActive } = req.body;
         const numericChapterId = Number(chapterId);
      
         if (isNaN(numericChapterId)) {
-            // if (pdfUrl) {
-            //     await deleteFileFromCloudinary(pdfUrl);
-            // }
             res.status(400).json({ message: "Invalid chapter ID" });
             return;
         }

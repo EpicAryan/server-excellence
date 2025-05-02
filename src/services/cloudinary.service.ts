@@ -16,10 +16,11 @@ export const uploadPdfToCloudinary = (buffer: Buffer, filename: string,  chapter
 
         const uploadOptions: UploadApiOptions = {
             resource_type: 'raw',
-            public_id: `${Date.now()}-${filename.replace(/\.[^/.]+$/, "")}`,
+            // public_id: `${Date.now()}-${filename.replace(/\.[^/.]+$/, "")}`,
+            public_id: `${Date.now()}-${filename.replace(/\.[^/.]+$/, "")}.pdf`,
             folder: folderName,
             overwrite: true,
-            format: 'pdf'
+            // format: 'pdf'
         };
 
         const uploadStream = cloudinary.uploader.upload_stream(
