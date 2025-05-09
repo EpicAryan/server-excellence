@@ -1,7 +1,7 @@
 // controllers/board.controller.ts
 import {Request, Response } from 'express';
 import { boardSchema } from '../schemas/course.schema';
-import { createBoard, getAllBoards, deleteBoard, updateBoardInDB  } from '../services';
+import { createBoard, getAllBoards, deleteBoard, updateBoardInDB, getBoardWithHierarchy  } from '../services';
 
 export const addBoard = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -83,5 +83,18 @@ export const updateBoard = async (req: Request, res: Response): Promise<void> =>
   } catch (error) {
     console.error("Error updating board:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getBoardHierarchy = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const boardId = req.query.boardId ? parseInt(req.query.boardId as string) : undefined;
+    
+    const hierarchy = await getBoardWithHierarchy(boardId);
+    
+    res.status(200).json(hierarchy);
+  } catch (error) {
+    console.error('Error fetching board hierarchy:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
