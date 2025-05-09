@@ -6,8 +6,10 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 255 }).notNull().unique(),
   password: varchar("password", { length: 255 }).notNull(),
   role: varchar("role", { length: 10 }).default("user").notNull(),
+  googleId: varchar('google_id', { length: 255 }),
   hasPermission: boolean("has_permission").default(true).notNull(), 
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
 });
 
 export type User = typeof users.$inferSelect;
