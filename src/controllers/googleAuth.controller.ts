@@ -5,6 +5,7 @@ import { generateAccessToken, generateRefreshToken } from '../utils';
 import db from '../config/db_connect';
 import { refreshTokens } from '../models';
 import crypto from 'crypto';
+import { eq } from 'drizzle-orm';
 
 // Initialize Google OAuth configuration
 const googleConfig = {
@@ -26,8 +27,6 @@ export const googleAuthCallback = async (req: Request, res: Response): Promise<v
   try {
     const { code } = req.query;
     if (!code) {
-      // res.status(400).json({ success: false, message: 'Authorization code is missing' });
-      // return;
       return res.redirect(`${process.env.FRONTEND_URL}/auth/error?error=missing_code`);
     }
 
@@ -72,10 +71,12 @@ export const googleAuthCallback = async (req: Request, res: Response): Promise<v
     // Check if user exists or create new one
     const user = await createOrUpdateGoogleUser(email, name, googleId);
     if (!user.success || !user.user) {
-        // res.status(400).json({ success: false, message: user.message || 'Google login failed' });
-        // return;
         return res.redirect(`${process.env.FRONTEND_URL}/auth/error?error=user_not_found&message=${encodeURIComponent(user.message || 'Google login failed')}`);
     }
+
+     await db
+       .delete(refreshTokens)
+       .where(eq(refreshTokens.userId, user.user.id));
 
     const { ...userWithoutPassword } = user.user;
     const accessToken = generateAccessToken(userWithoutPassword);
@@ -110,7 +111,6 @@ export const googleAuthCallback = async (req: Request, res: Response): Promise<v
     res.redirect(`${process.env.FRONTEND_URL}/auth/google/success`);
   } catch (error) {
     console.error('Google auth callback error:', error);
-    // res.status(500).json({ success: false, message: 'Google authentication failed' });
     return res.redirect(`${process.env.FRONTEND_URL}/auth/error?error=server_error&message=${encodeURIComponent('Authentication failed')}`);
   }
 };

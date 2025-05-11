@@ -56,6 +56,10 @@ export const loginUser = async (email: string, password: string) => {
             return { success: false, message: "Invalid credentials" };
         }
 
+        await db
+            .delete(refreshTokens)
+            .where(eq(refreshTokens.userId, user.id));
+            
         const { password: _, ...userWithoutPassword } = user;
         const accessToken = generateAccessToken(userWithoutPassword);
         const refreshToken = generateRefreshToken(userWithoutPassword);
