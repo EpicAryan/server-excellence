@@ -10,7 +10,7 @@ const app: Application = express();
 //   credentials: true,
 // }));
 app.use(cors({
-  origin: 'http://localhost:3000', // Specific frontend origin
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Specific frontend origin
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
