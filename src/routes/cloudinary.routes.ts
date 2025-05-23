@@ -5,7 +5,7 @@ import { authenticate, isAdmin } from '../middleware/auth.middleware';
 
 const router = Router();
 
-router.post('/upload-signature', generateUploadSignature);
+router.post('/upload-signature', authenticate, isAdmin, generateUploadSignature);
 router.post('/delete-file', authenticate, isAdmin, deleteCloudinaryFile);
 
 export default router;
