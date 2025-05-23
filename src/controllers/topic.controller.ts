@@ -92,23 +92,6 @@ export const addTopic = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
-// export const getTopics = async (req: Request, res: Response): Promise<void> => {
-//     try {
-//         const chapterId = parseInt(req.query.chapterId as string, 10);
-
-//         if (isNaN(chapterId)) {
-//             res.status(400).json({ message: "Invalid chapter ID" });
-//             return;
-//         }
-
-//         const topics = await getTopicsByChapterId(chapterId);
-//         res.status(200).json(topics);
-//     } catch (error) {
-//         console.error("Error fetching topics:", error);
-//         res.status(500).json({ message: "Server error" });
-//     }
-// };
-
 
 export const getTopics = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -294,4 +277,51 @@ export const toggleTopicStatus = async (req: Request, res: Response): Promise<vo
     console.error('Error toggling topic status:', error);
     res.status(500).json({ message: 'Server error' });
   }
+};
+
+
+export const createTopicWithUrl = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { chapterId, topicName, pdfUrl, isActive } = req.body;
+        const numericChapterId = Number(chapterId);
+     
+        if (isNaN(numericChapterId)) {
+            res.status(400).json({ message: "Invalid chapter ID" });
+            return;
+        }
+        
+        const existingChapter = await findChapterById(numericChapterId);
+        if (existingChapter.length === 0) {
+            res.status(404).json({ message: 'Chapter not found' });
+            return;
+        }
+
+        const topicData = {
+            topicName,
+            chapterId: numericChapterId,
+            pdfUrl,
+            isActive: isActive === "true" || isActive === true,
+        };
+
+        // Validate input data
+        const validationResult = topicSchema.safeParse(topicData);
+        if (!validationResult.success) {
+            res.status(400).json({
+                errors: validationResult.error.format(),
+            });
+            return;
+        }
+
+        // Insert topic
+        const newTopic = await createTopic(validationResult.data);
+
+        res.status(201).json({
+            message: "Topic created successfully",
+            data: newTopic[0],
+        });
+        return;
+    } catch (error) {
+        console.error("Error creating topic:", error);
+        res.status(500).json({ message: "Server error" });
+    }
 };
