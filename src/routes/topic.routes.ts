@@ -10,6 +10,6 @@ router.get('/', getTopics);
 router.put('/:id', authenticate, isAdmin, updateTopicById);
 router.delete('/:id', authenticate, isAdmin, deleteTopicById);
 router.patch('/:topicId/status',authenticate,isAdmin,toggleTopicStatus);
-router.post('/create-with-url',  createTopicWithUrl);
+router.post('/create-with-url', authenticate, isAdmin, createTopicWithUrl);
 
 export default router;

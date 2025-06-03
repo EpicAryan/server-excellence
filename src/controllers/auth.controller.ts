@@ -32,17 +32,17 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     if (result.success) {
       res.cookie("sessionId", result.sessionId, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "none",
         path: "/",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res.cookie("accessToken", result.accessToken, { // Corrected: Use accessToken here
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: true,
         sameSite: "none",
         path: "/",
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
     }
 

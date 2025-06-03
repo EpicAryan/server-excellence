@@ -1,3 +1,4 @@
+
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -9,8 +10,10 @@ const app: Application = express();
 //   origin: '*', 
 //   credentials: true,
 // }));
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Specific frontend origin
+  origin: FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
@@ -31,7 +34,7 @@ app.use(cookieParser());
 
 // Add OPTIONS preflight handler
 app.options('*', (req, res) => {
-  res.header('Access-Control-Allow-Origin', process.env.FRONTEND_URL || 'http://localhost:3000');
+  res.header('Access-Control-Allow-Origin', FRONTEND_URL);
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With');
