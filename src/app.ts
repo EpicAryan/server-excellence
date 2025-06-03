@@ -20,6 +20,7 @@ app.use(cors({
   allowedHeaders: [
     'Content-Type', 
     'Authorization',
+    'Cookie',
     'Accept',
     'Origin',
     'X-Requested-With'
