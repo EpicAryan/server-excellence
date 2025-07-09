@@ -1,106 +1,134 @@
-# Server Excellence Project
+# Excellence — Backend API for Academic Management
 
-## Overview
+**Excellence** is the backend system powering a streamlined academic management platform for educators. Built using **Node.js**, **Express**, **PostgreSQL**, and **Drizzle ORM**, it enables secure handling of student records, batch data, and subject-specific marks with clean, modular architecture.
 
-This project is a robust backend server built with Node.js, Express, and TypeScript, designed for scalability, maintainability, and excellence. It follows industry-standard best practices for project structure, code style, and security.
+---
 
-## Table of Contents
+## Features
 
-1.  [Folder Structure](#folder-structure)
-2.  [Naming Conventions](#naming-conventions)
-3.  [Installation](#installation)
-4.  [Cloning the Repository](#cloning-the-repository)
-5.  [Usage](#usage)
-6.  [Contributing](#contributing)
-7.  [License](#license)
+- Teacher account management and authentication
+- Add, view, and manage students
+- Batch-wise student grouping
+- Record subject-wise marks by semester
+- Secure login using JWT
+- Structured API endpoints for scalable expansion
+- API tested and modularized for clarity
 
-## Folder Structure
+---
 
-The project structure is organized to promote separation of concerns and easy navigation.
+## Tech Stack
 
-```
+| Tech           | Purpose                                  |
+|----------------|-------------------------------------------|
+| Node.js        | JavaScript runtime                       |
+| Express.js     | Web framework                            |
+| PostgreSQL     | Relational database                      |
+| Drizzle ORM    | Type-safe SQL schema and queries         |
+| TypeScript     | Static type checking                     |
+| Zod            | Data validation                          |
+| bcrypt         | Password hashing                         |
+| JWT            | Authentication tokens                    |
+| dotenv         | Environment variable management          |
+
+---
+
+## Project Structure
+
+```txt
 server-excellence/
-├── src/                    # Source code directory
-│   ├── @types/              # TypeScript type definitions
-│   ├── config/             # Configuration files
-│   ├── controllers/        # Route handlers (controllers)
-│   ├── middleware/         # Custom middleware functions
-│   ├── models/             # Database models (schemas)
-│   ├── routes/             # API route definitions
-│   ├── services/           # Business logic (services)
-│   └── utils/              # Utility functions
-├── package.json            # Project dependencies and scripts
-├── tsconfig.json           # TypeScript configuration
-├── README.md               # Project documentation (this file)
-└── .gitignore              # Specifies intentionally untracked files that Git should ignore
+├── controllers/ # Business logic
+│ ├── auth.controller.ts
+│ ├── user.controller.ts
+│ └── student.controller.ts
+├── db/
+│ ├── schema/ # Drizzle ORM table definitions
+│ ├── drizzle.config.ts
+│ └── db_connect.ts
+├── middleware/ # Auth and route protection
+│ └── authMiddleware.ts
+├── routes/ # API route definitions
+│ └── auth.routes.ts
+│ └── user.routes.ts
+│ └── student.routes.ts
+├── utils/ # Helpers and utilities
+│ └── hashPassword.ts
+│ └── jwt.ts
+├── validations/ # Zod schemas
+│ └── authSchema.ts
+├── index.ts # App entry point
+├── .env # Environment variables
+└── package.json
 ```
 
-## Naming Conventions
+## Setup & Installation
 
-Consistent naming conventions are crucial for code readability and maintainability.
-
-*   **Files:** Use camelCase with `.ts` extension (e.g., `auth.controller.ts`).
-*   **Variables/Constants:** Use camelCase for variables and SCREAMING_SNAKE_CASE for constants (e.g., `accessToken`, `REFRESH_SECRET`).
-*   **Classes/Interfaces/Types:** Use PascalCase (e.g., `AuthController`, `User`, `UserWithoutPassword`).
-*   **Functions/Methods:** Use camelCase (e.g., `registerUser`, `login`).
-*   **Directories:** Use lowercase (e.g., `controllers`, `utils`).
-
-## Installation
-
-Follow these steps to set up the project locally:
-
-1.  **Install Node.js:** Make sure you have Node.js (version 18 or higher) and npm installed on your system. You can download it from [nodejs.org](https://nodejs.org/).
-
-2.  **Install Dependencies:** Navigate to the project directory in your terminal and run:
-
-    ```bash
-    npm install
-    ```
-
-## Cloning the Repository
-
-To clone the repository, use the following command:
+### 1. Clone the Repository
 
 ```bash
-git clone <repository_url>
+git clone https://github.com/EpicAryan/server-excellence.git
 cd server-excellence
 ```
 
-## Usage
+### 2. Install Dependencies
 
-1.  **Start the Development Server:**
+```bash
+npm install
+# or
+yarn install
+```
 
-    ```bash
-    npm run dev
-    ```
+### 3. Environment Configuration
 
-    This command starts the server using `nodemon`, which automatically restarts the server on file changes.
+Create a .env file in the root directory:
+```bash
+PORT=3001
+DATABASE_URL=your_postgres_db_url
+JWT_SECRET=your_jwt_secret
+```
+Replace the values with your actual credentials.
 
-2.  **Build for Production:**
+### 4. Set Up Database
+Push schema using Drizzle ORM:
 
-    ```bash
-    npm run build
-    ```
+```bash
+npx drizzle-kit push
+```
+## Running the Server
 
-    This command compiles the TypeScript code into JavaScript and places it in the `dist` directory.
+Development
 
-3.  **Start the Production Server:**
+```bash
+npm run dev
+# or
+yarn dev
+```
+Runs on: http://localhost:3001
 
-    ```bash
-    npm start
-    ```
+## Authentication Flow
 
-    This command starts the server using the compiled JavaScript code in the `dist` directory.
+- Secure registration & login with hashed passwords
+- Token-based access with JWT
+- Protected routes for managing student and batch data
 
-## Contributing
+## Core API Endpoints
+| Route                | Method | Description            |
+| -------------------- | ------ | ---------------------- |
+| `/api/auth/register` | POST   | Register teacher       |
+| `/api/auth/login`    | POST   | Login teacher          |
+| `/api/user/profile`  | GET    | Fetch teacher info     |
+| `/api/student`       | POST   | Add a new student      |
+| `/api/student/:id`   | GET    | Get student by ID      |
+| `/api/student/batch` | GET    | List students by batch |
 
-We welcome contributions to this project! Please follow these guidelines:
 
-1.  Fork the repository.
-2.  Create a new branch for your feature or bug fix.
-3.  Make your changes and commit them with descriptive commit messages.
-4.  Submit a pull request.
+## Future Enhancements
+- Admin roles and permissions
+- Email verification and password reset
+- Advanced analytics and export reports
 
 ## License
+This project is licensed under the MIT License.
 
-This project is licensed under the [MIT License](LICENSE).
+
+Built with ❤️ by Aryan Kumar
+
